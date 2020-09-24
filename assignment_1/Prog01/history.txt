@@ -1,0 +1,162 @@
+Yeury Galva Liriano
+    1  ls
+    2  cd documents
+    3  ls
+    4  cd documents
+    5  cd Documents
+    6  ls
+    7  mkdir CSC412
+    8  ls
+    9  cd CSC412/
+   10  ls
+   11  touch Assignment1
+   12  ls
+   13  clear
+   14  cd ..
+   15  clear
+   16  ls
+   17  cd Documents/
+   18  ls
+   19  cd CSC412/
+   20  ls
+   21  open Assignment1
+   22  clear
+   23  ls
+   24  gcc --version
+   25  sudo apt install gcc
+   26  gcc --version
+   27  ls
+   28  cd Assignment1
+   29  rm Assignment1 
+   30  clear
+   31  mkdir Assignment1
+   32  ls
+   33  cd Assignment1/
+   34  chrome
+   35  visual studio code
+   36  vscode
+   37  clear
+   38  gcc --version
+   39  visual studio code
+   40  vscode
+   41  sudo snap install --classic code
+   42  sudo apt-get purge code
+   43  sudo lshw -c memory
+   44  clear
+   45  ls
+   46  cd Documents
+   47  ls
+   48  cd CSC412/
+   49  ls
+   50  cd Assignment1
+   51  ls
+   52  touch hello.c
+   53  clear
+   54  ls
+   55  clear
+   56  ls
+   57  gcc hello.c -o hello
+   58  ls
+   59  ./hello
+   60  clear
+   61  ls
+   62  ./hello
+   63  cd Documents
+   64  kls
+   65  ls
+   66  cd CSC412/
+   67  ls
+   68  cd Assignment1/
+   69  ls
+   70  ./hello
+   71  clear
+   72  cd Documents
+   73  ls
+   74  cd CSC412/
+   75  ls
+   76  cd Assignment1/
+   77  ls
+   78  ./hello
+   79  ls
+   80  cd Documents
+   81  ,s
+   82  ls
+   83  cd CSC412/
+   84  ls
+   85  cd Assignment1/
+   86  ls
+   87  touch hello.sh
+   88  open code
+   89  ./hello.sh
+   90  ls -l hello
+   91  chmod u+x hello.sh
+   92  ls -l hello
+   93  ./hello
+   94  clear
+   95  ls
+   96  ls -la
+   97  chmod +X helloBash.sh
+   98  ls -la
+   99  ./helloBash.sh
+  100  cd ..
+  101  ls
+  102  cd ..
+  103  cd Desktop
+  104  ls
+  105  cd Bash
+  106  ls
+  107  touch bash
+  108  cd ../..
+  109  clear
+  110  ls
+  111  mkdir practice
+  112  ls
+  113  cd practice
+  114  pwd
+  115  pwd > path.txt
+  116  pwd
+  117  ls
+  118  more path.txt
+  119  pr path.txt
+  120  clear
+  121  ls
+  122  touch hello.txt
+  123  ls
+  124  ls -la
+  125  rm hello.txt
+  126  ls
+  127  vim
+  128  sudo apt install vim
+  129  clear
+  130  vim
+  131  ls
+  132  cd practice
+  133  ls
+  134  vim path.txt
+  135  cd practice
+  136  ls
+  137  vim path.txt
+  138  cd practice
+  139  ls
+  140  historu
+  141  clear
+  142  cd ..
+  143  cler
+  144  clear
+  145  cd practice
+  146  ls
+  147  history
+  148  cd!
+  149  clear
+  150  history
+  151  ls
+  152  clear
+  153  ls
+  154  cd Documents
+  155  clear
+  156  cd documents
+  157  clear
+  158  cd documents
+  159  clear
+  160  ls
+  161  history
