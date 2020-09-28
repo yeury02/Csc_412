@@ -1,6 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void fib(char* exec_name, int fib1, int fib2, int n);
+
+int main(int argc, char* argv[]) 
+{
+    // get command line arguments and turn it to the appropiate date type
+    char* exec_name = argv[0];
+    int fib1 = atoi(argv[1]);
+    int fib2 = atoi(argv[2]);
+    int n = atoi(argv[3]);
+    // calls fib func
+    fib(exec_name, fib1, fib2, n);
+    
+    return 0;
+}
+
 void fib(char* exec_name, int fib1, int fib2, int n)
 {
     // makes sure all the numbers are positive
@@ -43,22 +58,9 @@ void fib(char* exec_name, int fib1, int fib2, int n)
     } 
     else
     {
-        // one or more of the arguments do not follow the rules
+        // one or more of the argument\s do not follow the rules
         printf("\n");
         printf("Usage:\t%s  F1 F2 n, with F2>F1>0 and n>0.\n", exec_name);
         printf("\n");
     }
-}
-
-int main(int argc, char* argv[]) 
-{
-    // get command line arguments and turn it to the appropiate date type
-    char* exec_name = argv[0];
-    int fib1 = atoi(argv[1]);
-    int fib2 = atoi(argv[2]);
-    int n = atoi(argv[3]);
-    // calls fib func
-    fib(exec_name, fib1, fib2, n);
-    
-    return 0;
 }
