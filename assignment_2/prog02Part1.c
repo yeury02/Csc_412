@@ -11,7 +11,15 @@ int main(int argc, char* argv[])
     int fib2 = atoi(argv[2]);
     int n = atoi(argv[3]);
     // calls fib func
-    fib(exec_name, fib1, fib2, n);
+    if (argc - 1 > 3)
+    {
+        printf("\n");
+        printf("Usage:\t%s  F1 F2 n, with F2>F1>0 and n>0.\n", exec_name);
+        printf("\n");
+    }
+    else{
+        fib(exec_name, fib1, fib2, n);
+    }
     
     return 0;
 }
