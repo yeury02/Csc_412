@@ -1,13 +1,106 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>   // for PATH_MAX
+// POSIX includes
+#include <sys/types.h>
+#include <dirent.h>
+
+typedef struct Image {
+    unsigned int numCols, numRows;
+    char locationName[100]; //name of the location
+    int imageNumber; //number of entry (image xxx)
+} Image;
+
+void get_extension(const char* search_string, char* extension);
+Image read_image(char* path);
 
 int main(int argc, char* argv[])
 {
     // if there are not 4 arguments, can't compute anything
     if (argc != 4)
     {
-        printf("Invalid arguments.")
+        printf("Usage: %s <directory path>\n", argv[0]);
+    }
+
+    struct dirent *ep;              // Pointer for directory entry   
+    DIR *dp = opendir(argv[1]);     // opendir() returns a pointer of DIR type.
+    //printf("Directory=%s\n", argv[1]);
+
+    char path[PATH_MAX + 1]; 
+
+    if (dp != NULL)
+	{
+		char extension[100];       //file extensions will likely never be more than 100
+        while (ep = readdir(dp))
+        {   
+            printf("entry=%s\n", ep->d_name);
+
+            //check if this entry is a directory
+			if (ep->d_type == DT_DIR)
+			{
+				printf("    Entry is a directory\n");
+			}
+            //check if entry is a regular file
+            else if (ep->d_type == DT_REG)
+			{
+				//only check the extension of files not directories
+				get_extension(ep->d_name, extension);
+				printf("    extension=%s\n", extension);
+				
+				//use the extension to determine what type of file it is
+				if (strcmp(extension, ".img") == 0)
+				{
+					printf("    File is an image file\n");
+                    realpath(ep->d_name, path);
+                    //printf ("[%s]\n", path);
+                    read_image(path);
+				}
+			}
+        }
     }
     return 0;
+}
+
+//get the extension and write to extension string
+void get_extension(const char* search_string, char* extension)
+{
+	char* dot = strchr(search_string, '.');
+	if (dot == NULL) //no file extension case
+	{
+		extension[0] = '\0'; //this will make extension a blank string
+	}
+	else
+	{
+		char* tmp = dot;
+		while (tmp != NULL)
+		{
+			tmp = strchr(tmp + 1, '.');
+			//printf("tmp=%s\n", tmp);
+			if (tmp != NULL)
+				dot = tmp;
+		}
+		//printf("dot=%s\n", dot);
+		strcpy(extension, dot);
+	}
+}
+
+Image read_image(char* path)
+{   
+    // creates file pointer and points to the file that opens
+    FILE* img_file = fopen(path, "r");
+    Image my_image;
+
+    printf("made it here");
+    fseek(img_file, 0, SEEK_END); // go to end of file
+
+    printf("made it here");
+    if (ftell(img_file) == 0)     // check if file is empty
+    {
+        printf("File Empty\n");
+    }
+    // if file is not empty,
+    // allocate memory for numrows and numcols
+    
+
 }
