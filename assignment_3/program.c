@@ -8,8 +8,9 @@
 
 typedef struct Image {
     unsigned int numCols, numRows;
-    char locationName[100]; //name of the location
-    int imageNumber; //number of entry (image xxx)
+    char** data;
+    //char locationName[100]; //name of the location
+    //int imageNumber; //number of entry (image xxx)
 } Image;
 
 void get_extension(const char* search_string, char* extension);
@@ -98,9 +99,22 @@ Image read_image(char* path)
     if (ftell(img_file) == 0)     // check if file is empty
     {
         printf("File Empty\n");
+        exit(0);
+    }
+    // read dimensions
+    fscanf(img_file, "%u%u\n", &my_image.numCols, &my_image.numRows);
+
+    my_image.data = (char**)calloc(my_image.numRows, sizeof(char*));
+    for (unsigned int i=0; i<my_image.numRows; i++)
+    {
+        // allocate row i
+
+        // read the row
     }
     // if file is not empty,
     // allocate memory for numrows and numcols
-    
 
+    fclose(img_file);
+    
+    return my_image;
 }
