@@ -9,31 +9,38 @@
 typedef struct Image {
     unsigned int numCols, numRows;
     char** data;
-    //char locationName[100]; //name of the location
-    //int imageNumber; //number of entry (image xxx)
 } Image;
-
-typedef struct Pattern {
-    unsigned int patCols, patRows;
-    char** pat_data;
-} Pattern;
 
 void get_extension(const char* search_string, char* extension);
 Image read_image(char* path);
+void read_dir(const char* dir_path, Image* images, Image* patterns, unsigned int* image_count, unsigned int* pattern_count);
+
 
 int main(int argc, char* argv[])
 {
+    // array of images
+    Image* images = NULL;
+    // array of patterns
+    Image* patterns = NULL;
+
+    unsigned int image_count = 0;
+    unsigned int pattern_count = 0;
     // if there are not 4 arguments, can't compute anything
     if (argc != 4)
     {
         printf("Usage: %s <directory path>\n", argv[0]);
     }
+    images = (Image*)malloc(sizeof(Image)*200);
+    patterns = (Image*)malloc(sizeof(Image)*200);
 
+    read_dir(argv[1], images, patterns, &image_count, &pattern_count);
+    read_dir(argv[2], images, patterns, &image_count, &pattern_count);
+}
+
+void read_dir(const char* dir_path, Image* images, Image* patterns, unsigned int* image_count, unsigned int* pattern_count)
+{
     struct dirent *ep;              // Pointer for directory entry   
-    DIR *dp = opendir(argv[1]);     // opendir() returns a pointer of DIR type.
-    //printf("Directory=%s\n", argv[1]);
-
-    char path[PATH_MAX + 1]; 
+    DIR *dp = opendir(dir_path);     // opendir() returns a pointer of DIR type.
 
     if (dp != NULL)
 	{
@@ -50,22 +57,41 @@ int main(int argc, char* argv[])
             //check if entry is a regular file
             else if (ep->d_type == DT_REG)
 			{
+                char* new_path = (char*)malloc(sizeof(char) * (strlen(ep->d_name) + strlen(dir_path) + 2));
+                strcpy(new_path, dir_path);
+                strcat(new_path, "/");
+                strcat(new_path, ep->d_name);
+                printf("new path: %s", new_path);
+
 				//only check the extension of files not directories
 				get_extension(ep->d_name, extension);
 				printf("    extension=%s\n", extension);
 				
 				//use the extension to determine what type of file it is
-				if (strcmp(extension, ".img") == 0)
+				if (strcmp(extension, ".img") == 0 && strcmp(extension, ".pat") == 0)
 				{
-					printf("    File is an image file\n");
-                    realpath(ep->d_name, path);
-                    printf ("%s\n", path);
-                    read_image(path);
+                    Image tmp = read_image(new_path);
+                    if (tmp.numRows > 0 && tmp.numCols > 0)
+                    {
+                        if (strcmp(extension, ".img") == 0)
+                        {
+                            images[*image_count] = tmp;
+                            *image_count++;
+                        }
+                        else if (strcmp(extension, ".pat") == 0)
+                        {
+                            patterns[*pattern_count] = tmp;
+                            *pattern_count++;
+                        }
+                    }
+                    else 
+                    {
+                        printf("Could not load image file %s\n", new_path);
+                    }
 				}
 			}
         }
     }
-    return 0;
 }
 
 //get the extension and write to extension string
@@ -93,21 +119,32 @@ void get_extension(const char* search_string, char* extension)
 
 Image read_image(char* path)
 {   
+    Image my_image;
     // creates file pointer and points to the file that opens
     FILE* img_file = fopen(path, "r");
-    Image my_image;
+    if (img_file == NULL)
+    {
+        printf("Cannot open file %s\n", path);
+        my_image.numCols = 0;
+        my_image.numRows = 0;
+        return my_image;
+    }
 
     fseek(img_file, 0, SEEK_END); // go to end of file
 
     if (ftell(img_file) == 0)     // check if file is empty
     {
         printf("File Empty\n");
-        exit(0);
+        my_image.numCols = 0;
+        my_image.numRows = 0;
+        return my_image;
     }
     printf("Made it here\n");
     fflush(stdout);
     // read dimensions
-    fscanf(img_file, "%u%u\n", &my_image.numCols, &my_image.numRows);
+    fseek(img_file, 0, SEEK_SET);
+    fscanf(img_file, "%u %u\n", &my_image.numCols, &my_image.numRows);
+    printf("%u %u\n", my_image.numCols, my_image.numRows);
 
     my_image.data = (char**)calloc(my_image.numRows, sizeof(char*));
     for (unsigned int i=0; i<my_image.numRows; i++)
@@ -117,15 +154,20 @@ Image read_image(char* path)
         // read the row
         for (unsigned int j=0; j<my_image.numCols; j++)
         {
-            fscanf(img_file, "%c", my_image.data[i]+j);
+            //fscanf(img_file, "%c", my_image.data[i]+j);
+            my_image.data[i][j] = (char)getc(img_file);
+            printf("%c", my_image.data[i][j]);
         }
-        // read the end of linear char, V1
-        char eol;
-        fscanf(img_file, "%c", &eol);
-    }
-    // if file is not empty,
-    // allocate memory for numrows and numcols
+        printf("\n");
 
+        // read the end of linear char, V1
+        char eol = (char)getc(img_file);
+        if (eol == '\r')
+        {
+            (char)getc(img_file);
+        }
+        //fscanf(img_file, "%c", &eol);
+    }
     fclose(img_file);
     
     return my_image;
