@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 				{
 					printf("    File is an image file\n");
                     realpath(ep->d_name, path);
-                    //printf ("[%s]\n", path);
+                    printf ("%s\n", path);
                     read_image(path);
 				}
 			}
@@ -92,15 +92,15 @@ Image read_image(char* path)
     FILE* img_file = fopen(path, "r");
     Image my_image;
 
-    printf("made it here");
     fseek(img_file, 0, SEEK_END); // go to end of file
 
-    printf("made it here");
     if (ftell(img_file) == 0)     // check if file is empty
     {
         printf("File Empty\n");
         exit(0);
     }
+    printf("Made it here\n");
+    fflush(stdout);
     // read dimensions
     fscanf(img_file, "%u%u\n", &my_image.numCols, &my_image.numRows);
 
@@ -108,8 +108,15 @@ Image read_image(char* path)
     for (unsigned int i=0; i<my_image.numRows; i++)
     {
         // allocate row i
-
+        my_image.data[i] = calloc(my_image.numCols, sizeof(char));
         // read the row
+        for (unsigned int j=0; j<my_image.numCols; j++)
+        {
+            fscanf(img_file, "%c", my_image.data[i]+j);
+        }
+        // read the end of linear char, V1
+        char eol;
+        fscanf(img_file, "%c", &eol);
     }
     // if file is not empty,
     // allocate memory for numrows and numcols
