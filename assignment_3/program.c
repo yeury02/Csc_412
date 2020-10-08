@@ -13,6 +13,11 @@ typedef struct Image {
     //int imageNumber; //number of entry (image xxx)
 } Image;
 
+typedef struct Pattern {
+    unsigned int patCols, patRows;
+    char** pat_data;
+} Pattern;
+
 void get_extension(const char* search_string, char* extension);
 Image read_image(char* path);
 
