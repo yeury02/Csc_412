@@ -14,7 +14,7 @@ typedef struct Image {
 void get_extension(const char* search_string, char* extension);
 Image read_image(char* path);
 void read_dir(const char* dir_path, Image* images, Image* patterns, unsigned int* image_count, unsigned int* pattern_count);
-
+void print_matches(Image* image, Image* pattern);
 
 int main(int argc, char* argv[])
 {
@@ -26,10 +26,10 @@ int main(int argc, char* argv[])
     unsigned int image_count = 0;
     unsigned int pattern_count = 0;
     // if there are not 4 arguments, can't compute anything
-    if (argc != 4)
-    {
-        printf("Usage: %s <directory path>\n", argv[0]);
-    }
+    // if (argc != 4)
+    // {
+    //     printf("Usage: %s <directory path>\n", argv[0]);
+    // }
     images = (Image*)malloc(sizeof(Image)*200);
     patterns = (Image*)malloc(sizeof(Image)*200);
 
@@ -154,11 +154,11 @@ void read_dir(const char* dir_path, Image* images, Image* patterns, unsigned int
 				if (strcmp(extension, ".img") == 0)
 				{
                     Image tmp = read_image(new_path);
-                    print_matches(tmp, patterns);
 
-                    // 
+                    // call print matches here
+                    print_matches(&tmp, patterns);
 
-                    
+                    //    
                     // as long as the file is not empty
                     // if (tmp.numRows > 0 && tmp.numCols > 0)
                     // {
@@ -191,6 +191,7 @@ void read_dir(const char* dir_path, Image* images, Image* patterns, unsigned int
 
 void print_matches(Image* image, Image* pattern)
 {
+    int count = 0;
     // iterate overy every possile positio of patter in the image
     for (unsigned int i=0; i<image->numRows-pattern->numRows; i++)
     {
@@ -198,7 +199,6 @@ void print_matches(Image* image, Image* pattern)
         {
             // do we find the pattern at locationn (i,j) in the loop
             int match = 1;
-            int count = 0;
             // loop over the entire pattern until reach the end
             for (unsigned int k=0; k<pattern->numRows; k++)
             {
@@ -218,12 +218,9 @@ void print_matches(Image* image, Image* pattern)
             {
                 count++;
                 // increment counter, store (i,j)
-                printf("matches: %d i:%d j:%d", count, i, j);
-
+                printf("matches: %d i:%d j:%d\n", count, i, j);
             }
             }
         }
-       
     }
-
 }
