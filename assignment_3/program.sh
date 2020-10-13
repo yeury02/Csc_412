@@ -1,31 +1,53 @@
 #!/bin/bash
 
-# if not the right amount of arguments are passed in
-if [ "$#" != "4" ]
-then
-	echo "usage: ./run.sh <C-Program> <Images> <Patterns> <Output>"
-	exit
-fi
+# TA Chris helped me complete this assignment during his office hours
+# he said to mention this on top of my bash script
 
-# made a directory
-mkdir copies
-pats=$(ls $3)
-echo "Starts"
+# defines all my arguments
+EXEC=$1
+IMG=$2
+PAT=$3
+OUTPUT=$4
 
-for d in $pats;
-do
-    bytes=$(hexdump -C $3/$d | grep -o " [0-9a-z][0-9a-z]")
-	for byte in $bytes;do
-		if [ $byte != "0d" ]
-		then
-			printf '\x'$byte'' >> copies/$d
-		fi
+# as long as I have all the correct arguments
+if [ "$#" = "4" ]
+	then
+		# list pattern files
+		Patterns=$(ls $PAT)
+		# made a directory
+		# got this idea from TA Chris
+		# create a temporary directory to make modifications
+		mkdir temp
+
+		# for every file
+		for pat in $Patterns;
+		do
+			# found this line online!
+			tmp=$(hexdump -C $PAT/$pat | grep -o " [0-9a-z][0-9a-z]")
+			for t in $tmp;
+			do	
+				# checking
+				if [ $t != "0d" ]
+				then
+					# output
+					printf '\x'$t'' >> temp/$pat
+				fi
+			done
+			# got this from online as well!
+			$(cp temp/$pat $PAT/$pat)
+		done
+
+	rm -rf temp
+	# build program
+	gcc -g $EXEC.c -o EXEC
+	for m in $Patterns;
+	do
+		# execute it
+		./$EXEC $PAT/$pat $IMG $OUTPUT
 	done
-	$(cp copies/$d $3/$d)
-done
 
-rm -rf copies
-gcc -g $1.c -o $1
-for pat in $pats;do
-	./$1 $3/$pat $2 $4
-done
+# in case I do not have enough arguments
+# this error message will be printed out
+else
+	echo "usage: $0 <C-Program-Executable> <Images> <Patterns> <Output>"
+fi
