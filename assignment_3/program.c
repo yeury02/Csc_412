@@ -15,6 +15,9 @@ void get_extension(const char* search_string, char* extension);
 Image read_image(char* path);
 void read_dir(const char* dir_path, Image* images, Image* patterns, unsigned int* image_count, unsigned int* pattern_count);
 void print_matches(Image* image, Image* pattern);
+char* get_file_name(char* pattern_file_path);
+void open_file(char* output_path);
+int intLength(int n);
 
 int main(int argc, char* argv[])
 {
@@ -26,16 +29,27 @@ int main(int argc, char* argv[])
     unsigned int image_count = 0;
     unsigned int pattern_count = 0;
     // if there are not 4 arguments, can't compute anything
-    // if (argc != 4)
-    // {
-    //     printf("Usage: %s <directory path>\n", argv[0]);
-    // }
+    if (argc != 4)
+    {
+        printf("Usage: %s <directory path>\n", argv[0]);
+    }
     images = (Image*)malloc(sizeof(Image)*200);
     patterns = (Image*)malloc(sizeof(Image)*200);
 
     patterns[0] = read_image(argv[1]);
     read_dir(argv[2], images, patterns, &image_count, &pattern_count);
-    //patterns[0] = read_image(argv[1]);
+
+    char* output_dir_path = argv[3];
+    char* new_file_name = get_file_name(argv[1]);
+    char* output_path = (char*)calloc(strlen(output_dir_path) + strlen(new_file_name) + 2, sizeof(char));
+    strcpy(output_path, output_dir_path);
+    // if outputDir_path doesn't end with /
+        strcat(output_path, "/");
+    strcat(output_path, new_file_name);
+    // strcat(output_path, new_file_name);
+    //printf("%s\n", output_path);
+    //void open_file(char* output_path);
+    free(output_path);
 }
 
 //get the extension and write to extension string
@@ -73,7 +87,6 @@ Image read_image(char* path)
         my_image.numRows = 0;
         return my_image;
     }
-
     fseek(img_file, 0, SEEK_END); // go to end of file
 
     if (ftell(img_file) == 0)     // check if file is empty
@@ -88,7 +101,7 @@ Image read_image(char* path)
     // read dimensions
     fseek(img_file, 0, SEEK_SET);
     fscanf(img_file, "%u %u\n", &my_image.numCols, &my_image.numRows);
-    printf("%u %u\n", my_image.numCols, my_image.numRows);
+    //printf("%u %u\n", my_image.numCols, my_image.numRows);
 
     my_image.data = (char**)calloc(my_image.numRows, sizeof(char*));
     for (unsigned int i=0; i<my_image.numRows; i++)
@@ -100,10 +113,8 @@ Image read_image(char* path)
         {
             //fscanf(img_file, "%c", my_image.data[i]+j);
             my_image.data[i][j] = (char)getc(img_file);
-            printf("%c", my_image.data[i][j]);
+            // printf("%c", my_image.data[i][j]);
         }
-        printf("\n");
-
         // read the end of linear char, V1
         char eol = (char)getc(img_file);
         if (eol == '\r')
@@ -113,7 +124,6 @@ Image read_image(char* path)
         //fscanf(img_file, "%c", &eol);
     }
     fclose(img_file);
-    
     return my_image;
 }
 
@@ -122,17 +132,17 @@ void read_dir(const char* dir_path, Image* images, Image* patterns, unsigned int
     struct dirent *ep;              // Pointer for directory entry   
     DIR *dp = opendir(dir_path);     // opendir() returns a pointer of DIR type.
 
+    //get char* outputPath as argument
+	FILE* output_path;
+
     if (dp != NULL)
 	{
 		char extension[100];       //file extensions will likely never be more than 100
         while (ep = readdir(dp))
         {   
-            //printf("entry=%s\n", ep->d_name);
-
             //check if this entry is a directory
 			if (ep->d_type == DT_DIR)
 			{
-				//printf("    Entry is a directory\n");
                 continue;
 			}
             //check if entry is a regular file
@@ -145,52 +155,27 @@ void read_dir(const char* dir_path, Image* images, Image* patterns, unsigned int
 
 				//only check the extension of files not directories
 				get_extension(ep->d_name, extension);
-				//printf("    extension=%s\n", extension);
-                // printf("Made it here\n");
-                // fflush(stdout);
 				
 				//use the extension to determine what type of file it is
-                //|| strcmp(extension, ".pat") == 0)
 				if (strcmp(extension, ".img") == 0)
 				{
                     Image tmp = read_image(new_path);
 
+                    printf("%s\n", ep->d_name);
                     // call print matches here
                     print_matches(&tmp, patterns);
-
-                    //    
-                    // as long as the file is not empty
-                    // if (tmp.numRows > 0 && tmp.numCols > 0)
-                    // {
-                    //     //printf("Made it here\n");
-                    //     //fflush(stdout);
-                    //     //printf("new path: %s\n", new_path);
-                    //     //images[*image_count] = tmp;
-                    //     *image_count++;
-                    //     printf("%ls", image_count);
-                    //     // else if (strcmp(extension, ".pat") == 0)
-                    //     // {
-                    //     //     patterns[*pattern_count] = tmp;
-                    //     //     *pattern_count++;
-                    //     // }
-                    // }
-                    // else
-                    // {
-                    //     printf("Could not load image file %s\n", new_path);
-                    // }
 				}
-                //   look for matches of pattern in temp
-
-                //  priduce output
-
-                //  free memory:  data in tmp  and new_path
 			}
         }
     }
 }
 
+// this function prints the matches found in img and pat
+// could have a different return type if I finished assignment
 void print_matches(Image* image, Image* pattern)
 {
+    // array 
+    char* matches = (char*)calloc(1, sizeof(char));
     int count = 0;
     // iterate overy every possile positio of patter in the image
     for (unsigned int i=0; i<image->numRows-pattern->numRows; i++)
@@ -214,13 +199,90 @@ void print_matches(Image* image, Image* pattern)
                         match = 0;
                     }
                 }
+            }
             if (match) 
             {
                 count++;
-                // increment counter, store (i,j)
-                printf("matches: %d i:%d j:%d\n", count, i, j);
-            }
+                int int_space = intLength(i);
+                int int_space2 = intLength(j);
+
+                char* tmp = (char*)calloc(strlen(matches)+int_space+int_space2+count+2, sizeof(char));
+                sprintf(tmp, "%s %d %d",matches, i,j);
+                matches = tmp;
             }
         }
     }
+    if (count == 1)
+    {
+        printf("   %d%s\n", count, matches);
+    }
+    else if ( count > 1)
+    {
+        // using a tab was too much
+        printf("   %d%s\n", count, matches);
+    }
+    else {
+        printf("   0\n");
+    }
 }
+
+// /pattern1.pat
+// this function is to get the name for the exact output file
+char* get_file_name(char* pattern_file_path)
+{
+    // _Matches.txt
+    char* add_to_file_name = "_Matches.txt";
+    char* file_path = strrchr(pattern_file_path, '/');
+    // allocate memory for file name
+    char* file_name = (char*)calloc((strlen(file_path)-5) + strlen(add_to_file_name), sizeof(char));
+    for (unsigned int i=0; i<strlen(file_path); i++)
+    {
+        if (file_path[i+1] == '.')
+        {
+            break;
+        }
+        file_name[i] = file_path[i+1];
+    }
+    strcat(file_name, add_to_file_name);
+    return file_name;
+}
+
+// did not get the chance to output to an output file
+// void open_file(char* output_path)
+// {
+//     FILE *out_file = fopen(output_path, "w"); 
+//     fprintf(out_file, "%s %s %s %d", "We", "are", "in", 2012);
+//     if ( out_file == NULL ) 
+//     { 
+//         printf( "file failed to open." ); 
+//     } 
+//     else
+//     {
+//         printf("file is now opened");
+//     }
+// }
+
+// function to know the length of an integer, to know the space to allocae dynamically
+int intLength(int n) {
+	if (n<10)
+    {
+	    return 1;
+    }
+	else if (n<100)
+    {
+	    return 2;
+    }
+    else if (n<1000)
+    {
+        return 3;
+    }
+    else if (n<10000)
+    {
+        return 4;
+    }
+    else
+    {
+        return 5;
+    }
+}
+
