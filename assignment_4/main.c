@@ -15,5 +15,13 @@ int main(int argc, char** argv)
 		return 0;
 	}
 
-    read_dir(argv[2]);
+    int num_child_processes = atoi(argv[1]);
+    printf("Number of Child Processes:%d\n\n", num_child_processes);
+
+    // make arr of processes here
+    Process* proc_array = (Process*)malloc(sizeof(Process) * 3000);
+    int proc_count = 0;
+
+    // argv[2] is the dir path
+    read_dir(argv[2], proc_array, &proc_count);
 }

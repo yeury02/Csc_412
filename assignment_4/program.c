@@ -27,12 +27,13 @@ void get_extension(const char* search_string, char* extension)
 	}
 }
 
-void read_dir(const char* dir_path)
+void read_dir(const char* dir_path, Process* proc_arr, int* proc_count)
 {
 	struct dirent *ep;              // Pointer for directory entry   
     DIR *dp = opendir(dir_path);     // opendir() returns a pointer of DIR type.
+    int i = 0;
 
-	printf("Directory=%s\n", dir_path);
+	printf("Directory=%s\n\n", dir_path);
 	//  //get char* outputPath as argument
 	// FILE* output_path;
 
@@ -60,9 +61,37 @@ void read_dir(const char* dir_path)
 				//use the extension to determine what type of file it is
 				if (strcmp(extension, ".txt") == 0)
 				{
-                    printf("%s\n", ep->d_name);
+                    printf("%s --> ", ep->d_name);
+                    read_file(new_path, &proc_arr[i]);
+                    i++;
 				}
 			}
         }
     }
+    proc_count[0] = i;
+}
+
+void read_file(char* file_path, Process* struct_process)
+{
+    FILE* pfile = fopen(file_path, "r");
+    if (pfile == NULL)
+    {
+        printf("Cannot open file: %s\n", file_path);
+    }
+    // fseek(pfile, 0, SEEK_END); // go to end of file
+
+    // if (ftell(pfile) == 0)     // check if file is empty
+    // {
+    //     printf("File Empty\n");
+    //     exit(1);
+    // }
+
+    fscanf(pfile, "%d %d", &struct_process->process_index, &struct_process->line_num);
+    struct_process->line_data = (char*)malloc(sizeof(char) * 2000);
+    // takes care of the last line, Chris helped me with this line, can get weird symbols if do not do this line
+    struct_process->line_data[0] = 0;
+    fgets(struct_process->line_data, 2000, pfile);
+    printf("%d %d %s\n", struct_process->process_index, struct_process->line_num, struct_process->line_data);
+
+    fclose(pfile);
 }
