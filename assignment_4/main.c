@@ -24,4 +24,5 @@ int main(int argc, char** argv)
 
     // argv[2] is the dir path
     read_dir(argv[2], proc_array, &proc_count);
+    divide_work(&proc_count);
 }

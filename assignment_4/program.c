@@ -69,6 +69,7 @@ void read_dir(const char* dir_path, Process* proc_arr, int* proc_count)
         }
     }
     proc_count[0] = i;
+    printf("%d\n", *proc_count);
 }
 
 void read_file(char* file_path, Process* struct_process)
@@ -94,4 +95,40 @@ void read_file(char* file_path, Process* struct_process)
     printf("%d %d %s\n", struct_process->process_index, struct_process->line_num, struct_process->line_data);
 
     fclose(pfile);
+}
+
+void divide_work(int* proc_count)
+{
+    int i;
+    int count = 1;
+    // refers to the number of distrubutors for 
+    if ((*proc_count + 5) % 2 == 0)
+    {
+        for (i=0; i<2; i++)
+        {
+            // allocates space for each distibutor to then be used to look at files of range
+            char* distributor = (char*)malloc(sizeof(char) * (*proc_count/2));
+            //void read_file(char* file_path, Process* struct_process);
+            printf("%d\n", i);
+        }
+    }
+    else
+    // do best to split the work as even as possible 
+    {
+        int zp = 2 - ((*proc_count+5) % 2); 
+        int pp = (*proc_count+5)/2; 
+        for(int i=0;i<2;i++)  
+        { 
+            if(i >= zp)
+            {
+                pp++;
+                printf("%d\n", pp++);
+
+            }
+            else
+            {
+                printf("%d\n", pp);
+            }
+        }
+    }
 }
