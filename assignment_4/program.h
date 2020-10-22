@@ -1,6 +1,7 @@
 #ifndef PROGRAM_H
 #define PROGRAM_H
 
+// rename struct to be for sorting data
 typedef struct Process {
     int process_index, line_num, process_ID; // process_ID will not be used for version 1
     char* line_data;

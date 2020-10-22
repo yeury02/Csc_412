@@ -69,7 +69,7 @@ void read_dir(const char* dir_path, Process* proc_arr, int* proc_count)
         }
     }
     proc_count[0] = i;
-    printf("%d\n", *proc_count);
+    printf("file count: %d\n\n", *proc_count);
 }
 
 void read_file(char* file_path, Process* struct_process)
@@ -99,36 +99,33 @@ void read_file(char* file_path, Process* struct_process)
 
 void divide_work(int* proc_count)
 {
-    int i;
-    int count = 1;
-    // refers to the number of distrubutors for 
-    if ((*proc_count + 5) % 2 == 0)
-    {
-        for (i=0; i<2; i++)
-        {
-            // allocates space for each distibutor to then be used to look at files of range
-            char* distributor = (char*)malloc(sizeof(char) * (*proc_count/2));
-            //void read_file(char* file_path, Process* struct_process);
-            printf("%d\n", i);
-        }
-    }
-    else
-    // do best to split the work as even as possible 
-    {
-        int zp = 2 - ((*proc_count+5) % 2); 
-        int pp = (*proc_count+5)/2; 
-        for(int i=0;i<2;i++)  
-        { 
-            if(i >= zp)
-            {
-                pp++;
-                printf("%d\n", pp++);
+    // 2 is the number of distributors
 
-            }
-            else
-            {
-                printf("%d\n", pp);
-            }
+    int files =  23;
+    int proc_num = 5;
+    int m = (files)/proc_num; 
+    int p = (files)%proc_num;
+    printf("m=%d p=%d\n", m, p);
+
+    int start_index = 0;
+    int end_index = m - 1;
+    // refers to the number of distrubutors for 
+    // if ((pp) % 5 == 0)
+    // {
+    for (unsigned int k = 0; k < proc_num; k++)
+    {
+        // the first p processes have one more file
+        if (k < p)
+        {
+            end_index++;
         }
+        printf("%d %d\n", start_index, end_index);
+
+        // create process
+        //distributor(k, folderpath, start_index, end_index);
+
+        // update range of indeces
+        start_index = end_index+1;
+        end_index = start_index + m - 1;
     }
 }
