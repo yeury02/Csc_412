@@ -19,10 +19,10 @@ int main(int argc, char** argv)
     printf("Number of Child Processes:%d\n\n", num_child_processes);
 
     // make arr of processes here
-    Process* proc_array = (Process*)malloc(sizeof(Process) * 3000);
+    Process* proc_arr = (Process*)malloc(sizeof(Process) * 3000);
     int proc_count = 0;
 
     // argv[2] is the dir path
-    read_dir(argv[2], proc_array, &proc_count);
-    divide_work(&proc_count);
+    read_dir(argv[2], proc_arr, &proc_count, num_child_processes);
+    //divide_work(argv[2]);
 }
