@@ -8,16 +8,18 @@ typedef struct Process {
     char* file_paths;
 } Process;
 
-typedef struct Task {
-    int num_files;   // 4
-    int* file_index; // array indeces {0, 5, 8, 12}
-}Task;
+// typedef struct Task {
+//     int num_files;   // 4
+//     int* file_index; // array indeces {0, 5, 8, 12}
+// }Task;
 
 void get_extension(const char* search_string, char* extension);
 void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_child_processes);
 int compare_to_sort(const void* a, const void* b);
 Process read_file(char* file_path);
 void write_to_file(const char* file_path, const Process* fork_arr, int count);
+
+
 // void read_file(char* file_path, Process* struct_process);
 // void distributor(unsigned int k, const char* dir_path, int start_index, int end_index);
 // void divide_work(const char* dir_path);

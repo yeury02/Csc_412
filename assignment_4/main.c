@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 	}
 
     int num_child_processes = atoi(argv[1]);
-    printf("Number of Child Processes:%d\n\n", num_child_processes);
+   // printf("Number of Child Processes:%d\n\n", num_child_processes);
 
     // make arr of processes here
     Process* proc_arr = (Process*)malloc(sizeof(Process) * 3000);
