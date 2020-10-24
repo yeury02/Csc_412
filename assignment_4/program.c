@@ -27,6 +27,47 @@ void get_extension(const char* search_string, char* extension)
 	}
 }
 
+int compare_to_sort(const void* a, const void* b)
+{
+    const Process* fid_a = (const Process*)a;
+    const Process* fid_b = (const Process*)b;
+    int value = fid_a->line_num - fid_b->line_num;
+    return value;
+}
+
+Process read_file(char* file_path)
+{
+    Process fork_ar;
+    FILE *fp;
+    fp = fopen(file_path, "r"); // read file
+    if (fp == NULL)
+    {
+        printf("Cannot open file: %s\n", file_path);
+    }
+    fork_ar.line_data = (char*)malloc(sizeof(char) * 2000);
+    int num_arr = fscanf(fp, "%d %d", &fork_ar.process_index, &fork_ar.line_num);
+
+    fgets(fork_ar.line_data, 2000, fp);
+
+    fclose(fp);
+    return fork_ar;
+}
+
+void write_to_file(const char* file_path, const Process* fork_arr, int count)
+{
+    FILE *fptr1;
+
+    fptr1 = fopen(file_path, "w");
+
+    if (fptr1 != NULL)
+    {
+        for (unsigned int i = 0; i < count; i++)
+        {
+            fprintf(fptr1, "%s\n", fork_arr[i].line_data);
+        }
+    }
+}
+
 void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_child_processes)
 {
 	struct dirent *ep;              // Pointer for directory entry   
@@ -63,7 +104,7 @@ void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_
 				{
                     // printf("%s\n", ep->d_name);
                     proc_arr[i].file_paths = new_path;
-                    printf("%s", proc_arr[i].file_paths);
+                    printf("%s\n", proc_arr[i].file_paths);
                     //read_file(new_path, &proc_arr[i]);
                     i++;
 				}
@@ -76,6 +117,7 @@ void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_
         }
     }
     proc_count[0] = i;
+
     char*** child_lists = (char***)malloc(sizeof(char**) * num_child_processes);
     int* child_list_sizes = (int*)malloc(sizeof(int) * num_child_processes);
     for (unsigned int i = 0; i < num_child_processes; i++)
@@ -134,53 +176,24 @@ void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_
         for (unsigned int j = 0; j < child_list_sizes[i]; j++)
         {
             sub_data[i][j] = read_file(child_lists[i][j]);
+            //printf("%s\n", child_lists[i][j]);
+            //printf("%d %d %s", sub_data[i][j].process_index, sub_data[i][j].line_num, sub_data[i][j].line_data);
         }
         qsort(sub_data[i], child_list_sizes[i], sizeof(Process), compare_to_sort);
         char* file1 = (char*)malloc(sizeof(char)*100);
         sprintf(file1, "output_%u.txt", i); // printing to string 
-        //write_to_file(file1, sub_data[i], child_list_sizes[i]);
+        write_to_file(file1, sub_data[i], child_list_sizes[i]);
         free(file1);
     }
-}
 
-int compare_to_sort(const void* a, const void* b)
-{
-    const Process* fid_a = (const Process*)a;
-    const Process* fid_b = (const Process*)b;
-    int value = fid_a->line_num - fid_b->line_num;
-    return value;
-}
-
-Process read_file(char* file_path)
-{
-    Process fork_ar;
-    FILE *fp;
-    fp = fopen(file_path, "r"); // read file
-    if (fp == NULL)
+    for (unsigned int i = 0; i < num_child_processes; i++)
     {
-        printf("Cannot open file: %s\n", file_path);
-    }
-    fork_ar.line_data = (char*)malloc(sizeof(char) * 2000);
-    int num_arr = fscanf(fp, "%d %d", &fork_ar.process_index, &fork_ar.process_index);
-    fgets(fork_ar.line_data, 2000, fp);
-
-    fclose(fp);
-    return fork_ar;
-}
-
-void write_to_file(const char* file_path, const Process* fork_arr, int count);
-{
-    FILE *fptr1;
-
-    fptr1 = fopen(file_path, "w");
-
-    if (fptr != NULL)
-    {
-        for (unsigned int i = 0; i < count; i++)
+        printf("printing list i: %u\n", i);
+        for (unsigned int j = 0; j < child_list_sizes[i]; j++)
         {
-            fprintf(fprt1, "%s\n", fork_arr[i].line_data);
+            Process* f = &sub_data[i][j];
+            printf("%d %d %s", f->process_index, f->line_num, f->line_data);
         }
-        
     }
 }
 

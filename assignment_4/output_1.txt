@@ -1,0 +1,14 @@
+ int main(int argc, char* argv[])
+
+ {
+
+ 	printf("Hello, World!\n");
+
+ 	printf("CSC412 - Programming assignment 04\n");
+
+ 	return 0;
+
+ }
+
+
+
