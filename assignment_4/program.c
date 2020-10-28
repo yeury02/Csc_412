@@ -68,7 +68,7 @@ void write_to_file(const char* file_path, const Process* fork_arr, int count)
     }
 }
 
-void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_child_processes)
+void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_child_processes, char* file_name)
 {
 	struct dirent *ep;              // Pointer for directory entry   
     DIR *dp = opendir(dir_path);     // opendir() returns a pointer of DIR type.
@@ -127,10 +127,7 @@ void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_
         memset(child_lists[i], 0, sizeof(char*) * proc_count[0]);
     }
 
-// Chris helped me do this!!!!!!!!!!
-    // rename proc_count to num_files
-    //printf("file count: %d\n\n", *proc_count);
-
+    // Chris helped me do this!!!!!!!!!!
     // go thru all files, open them, figure out what the first number is, assign path to correct list
     for (unsigned int i = 0; i < proc_count[0]; i++)
     {
@@ -157,21 +154,19 @@ void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_
         }
     }
 
-    //printing step --------------
-    for (unsigned int i = 0; i < num_child_processes; i++)
-    {
-        //printf("Child %u has %d file paths\n", i, child_list_sizes[i]);
-        for (unsigned int j = 0; j < child_list_sizes[i]; j++)
-        {
-           //printf("    Paths:%s\n", child_lists[i][j]);
-        }
-    }
+    // //printing step --------------
+    // for (unsigned int i = 0; i < num_child_processes; i++)
+    // {
+    //     //printf("Child %u has %d file paths\n", i, child_list_sizes[i]);
+    //     for (unsigned int j = 0; j < child_list_sizes[i]; j++)
+    //     {
+    //        printf("    Paths:%s\n", child_lists[i][j]);
+    //     }
+    // }
 
     // sorted function?
     // sort content of each file and send sorted output to an output file
     Process** sub_data = (Process**)malloc(sizeof(Process*) * num_child_processes);
-    char* file1 = (char*)malloc(sizeof(char)*100);
-
     for (unsigned int i = 0; i < num_child_processes; i++)
     {
         sub_data[i] = (Process*)malloc(sizeof(Process) * child_list_sizes[i]);
@@ -183,26 +178,24 @@ void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_
         }
         // printf("-----------------------------------\n");
         qsort(sub_data[i], child_list_sizes[i], sizeof(Process), compare_to_sort);
-        char* file1 = (char*)malloc(sizeof(char)*100);
-        sprintf(file1, "output_%u.txt", i); // printing to string
-        write_to_file(file1, sub_data[i], child_list_sizes[i]);
-        free(file1);
+        // char* file1 = (char*)malloc(sizeof(char)*100);
+        // // sprintf(file1, "distri%u.txt", i); // printing to string
+        // //write_to_file(file1, sub_data[i], child_list_sizes[i]);
+        // free(file1);
     }
 
+    // this writes results to an output file
+    FILE *fp;
+    fp  = fopen (file_name, "w");
+    //char* output = (char*)malloc(sizeof(char)*100);
     for (unsigned int i = 0; i < num_child_processes; i++)
     {
         //printf("printing list i: %u\n", i);
         for (unsigned int j = 0; j < child_list_sizes[i]; j++)
         {
             Process* f = &sub_data[i][j];
-            printf("%d %d %s", f->process_index, f->line_num, f->line_data);
+            fputs(f->line_data, fp);
         }
     }
+    fclose(fp);
 }
-
-
-
-// char* build_distributor_or_file_name(int index)
-// {
-//     "distr_" + index + ".txt";
-// }

@@ -14,12 +14,6 @@ typedef struct Process {
     char* file_paths;
 } Process;
 
-// typedef struct Task {
-//     int num_files;   // 4
-//     int* file_index; // array indeces {0, 5, 8, 12}
-// }Task;
-
-
 /**
  * @author Yeury Galva Liriano
  * @date October 25, 2020
@@ -27,7 +21,6 @@ typedef struct Process {
  * @details This function is useful to know what kinds of files are being looked at, by looking at the extension. Function is called in the read_dir function
  * @param search_string The pointer to search for a specific extension
  * @param extension This is an pointer to an array of characters to basically hold the extension of file
- * @return Function does not return anything
  */
 void get_extension(const char* search_string, char* extension);
 
@@ -40,9 +33,8 @@ void get_extension(const char* search_string, char* extension);
  * @param proc_arr Instance of my struct, used to assign all the new created file paths to my data structure
  * @param proc_count Used to count how many files exist in the dir_path folder
  * @param num_child_processes Used to count how many different distributors are in dir_path
- * @return Function does not return anything
  */
-void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_child_processes);
+void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_child_processes, char* file_name);
 
 /**
  * @author Yeury Galva Liriano
@@ -51,10 +43,8 @@ void read_dir(const char* dir_path, Process* proc_arr, int* proc_count, int num_
  * @details This function is useful and necessary to have because it compares two files and returns which one has the highest line number. This is then used on the qsort.
  * @param a A pointer to a specific file
  * @param b A pointer to a specific file
- * @return Function returns the difference between a->line_number - b->line_number
  */
 int compare_to_sort(const void* a, const void* b);
-
 
 /**
  * @author Yeury Galva Liriano
@@ -77,15 +67,5 @@ Process read_file(char* file_path);
  * @return Function does not return anything
  */
 void write_to_file(const char* file_path, const Process* fork_arr, int count);
-
-
-// void read_file(char* file_path, Process* struct_process);
-// void distributor(unsigned int k, const char* dir_path, int start_index, int end_index);
-// void divide_work(const char* dir_path);
-
-
-//char* build_distributor_or_file_name(int index);
-
-// distrubutor_or_func(<arguments>) writes results to file
 
 #endif

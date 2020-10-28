@@ -9,13 +9,14 @@
 int main(int argc, char** argv)
 {
 	
-	if (argc != 3) //need the name of program and a string parameter
+	if (argc != 4) //need the name of program and a string parameter
 	{
 		printf("Usage: %s <number n of child processes> <directory path>\n", argv[0]);
 		return 0;
 	}
 
     int num_child_processes = atoi(argv[1]);
+    char* file_name = argv[3];
    // printf("Number of Child Processes:%d\n\n", num_child_processes);
 
     // make arr of processes here
@@ -23,6 +24,6 @@ int main(int argc, char** argv)
     int proc_count = 0;
 
     // argv[2] is the dir path
-    read_dir(argv[2], proc_arr, &proc_count, num_child_processes);
+    read_dir(argv[2], proc_arr, &proc_count, num_child_processes, file_name);
     //divide_work(argv[2]);
 }
