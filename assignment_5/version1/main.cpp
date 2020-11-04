@@ -20,10 +20,7 @@ int main(int argc, char** argv)
     // std::cout << outputFolder << std::endl;
     // std::cout << jobFile << std::endl;
 
+    JobOutput result = processOneJobFile(applicationFolder, dataFolder, outputFolder, jobFile);
 
-
-
-    //std::string filePath = argv[1];
-    //int result = processOneJobFile(filePath);
-    return 0;
+    return result.numTasksCompleted;
 }
