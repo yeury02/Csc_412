@@ -1,4 +1,5 @@
 #include <algorithm>	//	for max
+#include <cstring>
 //
 #include "crop.h"
 #include "gray.h"

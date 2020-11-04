@@ -5,7 +5,7 @@
 
 /**	Simple enum type to report optional arguments for the program
  */
-using RotationVal = enum 
+typedef enum RotationVal
 {
 	NO_ROTATION = 0,
 	ROTATE_90,
@@ -14,7 +14,7 @@ using RotationVal = enum
 	//
 	NUM_ROTATIONS	//	automatically 4
 	
-};
+} RotationVal;
 
 
 /**
