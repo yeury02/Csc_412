@@ -60,6 +60,7 @@ int childProcess(std::string line, std::string applicationFolder, std::string da
 			pathToFlip.c_str(),		// path to executable
 			"flipH",				// name of command (what will appear as argv[0])
 			pathToImage.c_str(),
+            outputFolder.c_str(),
 			NULL
 		);
     }
@@ -82,6 +83,7 @@ int childProcess(std::string line, std::string applicationFolder, std::string da
 			pathToFlip.c_str(),		// path to executable
 			"flipV",				// name of command (what will appear as argv[0])
 			pathToImage.c_str(),
+            outputFolder.c_str(),
 			NULL
 		);
     }
@@ -104,6 +106,7 @@ int childProcess(std::string line, std::string applicationFolder, std::string da
 			pathToFlip.c_str(),		// path to executable
 			"gray",				    // name of command (what will appear as argv[0])
 			pathToImage.c_str(),
+            outputFolder.c_str(),
 			NULL
 		);  
     }
@@ -137,6 +140,7 @@ int childProcess(std::string line, std::string applicationFolder, std::string da
 			pathToFlip.c_str(),		// path to executable
 			"crop",				    // name of command (what will appear as argv[0])
             pathToImage.c_str(),
+            outputFolder.c_str(),
 			x.c_str(),
             y.c_str(),
             w.c_str(),
@@ -159,13 +163,14 @@ int childProcess(std::string line, std::string applicationFolder, std::string da
         //build path to image                                                / + \0 
 		std::string pathToImage = dataFolder + "/" + imageName;
 
-        std::cout << rotationMoves << " " << imageName << " " << pathToFlip << " " << pathToImage << std::endl;
+        // std::cout << rotationMoves << " " << imageName << " " << pathToFlip << " " << pathToImage << std::endl;
 
         result = execlp(
-			pathToFlip.c_str(),		// path to executable
+			pathToFlip.c_str(),		    // path to executable
 			"rotate",				    // name of command (what will appear as argv[0])
             rotationMoves.c_str(),
 			pathToImage.c_str(),
+            outputFolder.c_str(),
 			NULL
 		);  
     }
