@@ -9,7 +9,7 @@ struct JobOutput {
 };
 
 JobOutput processOneJobFile(std::string applicationFolder, std::string dataFolder, std::string outputFolder, std::string jobFile);
-JobOutput childProcess(std::string line, std::string applicationFolder, std::string dataFolder, std::string outputFolder, std::string jobFile);
+int childProcess(std::string line, std::string applicationFolder, std::string dataFolder, std::string outputFolder, std::string jobFile);
 std::vector<std::string> splitString(std::string line);
 
 #endif
