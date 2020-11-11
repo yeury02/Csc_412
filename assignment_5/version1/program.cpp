@@ -201,7 +201,6 @@ JobOutput processOneJobFile(std::string applicationFolder, std::string dataFolde
         int p = fork();   // lab 05
 		if (p==0)
         {
-            std::cout << line << std::endl;
             int result = childProcess(line, applicationFolder, dataFolder, outputFolder, jobFile);
             break;
         }
