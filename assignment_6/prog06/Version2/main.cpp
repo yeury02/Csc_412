@@ -40,6 +40,7 @@
 #include <ctime>
 #include <unistd.h>
 #include <pthread.h>
+#include <sstream>
 //
 #include "gl_frontEnd.h"
 
@@ -75,7 +76,7 @@ void displayGridPane(void);
 void displayStatePane(void);
 void initializeApplication(void);
 void cleanupAndquit(void);
-void* createMainThreadFunc(void* arg);
+void* createThreadsFunc(void* arg);
 void* computationThreadFunc(void* arg);
 void swapGrids(void);
 void distributeRows(void);
@@ -128,8 +129,15 @@ unsigned int** nextGrid2D;
 
 //const unsigned int NUM_ROWS = 400, NUM_COLS = 420;
 
+
+// these are my arguments
 unsigned int numCols, numRows, maxNumThreads;
-unsigned int sleepTime = 100000;
+unsigned int sleepTime = 200000;
+unsigned int threatCount = 0;
+// to prevent other threads from altering the count
+pthread_mutex_t lockCount;
+bool run = true;
+
 ThreadInfo* info;
 
 //	the number of live computation threads (that haven't terminated yet)
@@ -196,7 +204,7 @@ int main(int argc, const char* argv[])
 
 				// create main threat simulation
 				pthread_t simulation;
-				pthread_create(&simulation, NULL, createMainThreadFunc, NULL);
+				pthread_create(&simulation, NULL, createThreadsFunc, NULL);
 
 				//	Now would be the place & time to create mutex locks and threads
 
@@ -275,47 +283,55 @@ void initializeApplication(void)
 //	You will need to implement/modify the two functions below
 //---------------------------------------------------------------------
 
-void* createMainThreadFunc(void* arg)
+void* createThreadsFunc(void* arg)
 {
 	(void) arg;
-	bool keepGoing = true;
-	while (keepGoing)
+
+	pthread_mutex_init(&lockCount,nullptr);
+	distributeRows();
+	for (int k = 0; k < maxNumThreads; k++)
 	{
-		oneGeneration();
-		generation++;
-		swapGrids();
-		usleep(sleepTime); // sleepTime is declared as global variable
+        pthread_mutex_init(&info[k].lock,nullptr);
+        pthread_mutex_lock(&(info[k].lock)); // acquire
+    }
+    for (int k = 0; k < maxNumThreads; k++)
+	{
+        pthread_create(&(info[k].threadID),nullptr,computationThreadFunc,info+k);
+	}
+	for (int k = 0; k < maxNumThreads; k++)
+	{
+		pthread_mutex_unlock(&(info[k]).lock);
 	}
 	return NULL;
 }
 
 
-//	I have decided to go for maximum modularity and readability, at the
-//	cost of some performance.  This may seem contradictory with the
-//	very purpose of multi-threading our application.  I won't deny it.
-//	My justification here is that this is very much an educational exercise,
-//	my objective being for you to understand and master the mechanisms of
-//	multithreading and synchronization with mutex.  After you get there,
-//	you can micro-optimi1ze your synchronized multithreaded apps to your
-//	heart's content.
-void oneGeneration(void)
-{
-	distributeRows();
-	// create threads
-	for (int k=0; k < maxNumThreads; k++)
-	{
-		//	initialize ThreadInfo struct for thread k
-		pthread_create(&(info[k].threadID),nullptr,computationThreadFunc,info+k);
-	}
-	//	wait for threads to finish (join)
-	for (int k=0; k < maxNumThreads; k++)
-	{
-		//	create thread k
-		pthread_join(info[k].threadID,nullptr);
-	}
-	// free memory once everythig is done
-	delete []info;
-}
+// //	I have decided to go for maximum modularity and readability, at the
+// //	cost of some performance.  This may seem contradictory with the
+// //	very purpose of multi-threading our application.  I won't deny it.
+// //	My justification here is that this is very much an educational exercise,
+// //	my objective being for you to understand and master the mechanisms of
+// //	multithreading and synchronization with mutex.  After you get there,
+// //	you can micro-optimi1ze your synchronized multithreaded apps to your
+// //	heart's content.
+// void oneGeneration(void)
+// {
+// 	distributeRows();
+// 	// create threads
+// 	for (int k=0; k < maxNumThreads; k++)
+// 	{
+// 		//	initialize ThreadInfo struct for thread k
+// 		pthread_create(&(info[k].threadID),nullptr,computationThreadFunc,info+k);
+// 	}
+// 	//	wait for threads to finish (join)
+// 	for (int k=0; k < maxNumThreads; k++)
+// 	{
+// 		//	create thread k
+// 		pthread_join(info[k].threadID,nullptr);
+// 	}
+// 	// free memory once everythig is done
+// 	delete []info;
+// }
 
 void* computationThreadFunc(void* arg)
 {
@@ -323,30 +339,63 @@ void* computationThreadFunc(void* arg)
 	ThreadInfo* data = static_cast<ThreadInfo*>(arg);
 	// C-style
 	//ThreadInfo* data = (ThreadInfo*) arg;
-
-	for (unsigned int i = data->startRow; i <= data->endRow; i++)
+	pthread_mutex_lock(&(data->lock)); // acquire
 	{
-		for (unsigned int j=0; j<numCols; j++)
-		{
-			unsigned int newState = cellNewState(i, j);
+		stringstream sstr;
+		sstr << "\t+ Thread " << data->threadIndex << " launched\n";
+		sstr << "\t ----> lock acquired\n";
+		cout << sstr.str() << flush;
+	}
 
-			//	In black and white mode, only alive/dead matters
-			//	Dead is dead in any mode
-			if (colorMode == 0 || newState == 0)
+	int numRowsProcessed = data->endRow - data->startRow;
+	//bool keepGoing = true;
+	while (run)
+	{
+		for (unsigned int i = data->startRow; i <= data->endRow; i++)
+		{
+			for (unsigned int j=0; j<numCols; j++)
 			{
-				nextGrid2D[i][j] = newState;
-			}
-			//	in color mode, color reflext the "age" of a live cell
-			else
-			{
-				//	Any cell that has not yet reached the "very old cell"
-				//	stage simply got one generation older
-				if (currentGrid2D[i][j] < NB_COLORS-1)
-					nextGrid2D[i][j] = currentGrid2D[i][j] + 1;
-				//	An old cell remains old until it dies
+				unsigned int newState = cellNewState(i, j);
+
+				//	In black and white mode, only alive/dead matters
+				//	Dead is dead in any mode
+				if (colorMode == 0 || newState == 0)
+				{
+					nextGrid2D[i][j] = newState;
+				}
+				//	in color mode, color reflext the "age" of a live cell
 				else
-					nextGrid2D[i][j] = currentGrid2D[i][j];
+				{
+					//	Any cell that has not yet reached the "very old cell"
+					//	stage simply got one generation older
+					if (currentGrid2D[i][j] < NB_COLORS-1)
+						nextGrid2D[i][j] = currentGrid2D[i][j] + 1;
+					//	An old cell remains old until it dies
+					else
+						nextGrid2D[i][j] = currentGrid2D[i][j];
+				}
 			}
+		}
+		threatCount++;
+		// if on last thread, swap grids
+		if (threatCount == numRowsProcessed)
+		{
+			stringstream sstr;
+			// test
+			sstr << "\t |\t count is " << threatCount << "\n";
+			threatCount = 0;
+			swapGrids();
+			generation++;
+			pthread_mutex_unlock(&(data->lock)); // release locks
+			// test
+			sstr << "\t | last thread " << data->threadIndex << "\n";
+			sstr << "\t --<- lock released\n";
+			//threatCount << sstr.str() << flush;
+		}
+		else 
+		{
+			usleep(sleepTime);
+			pthread_mutex_unlock(&lockCount); // release
 		}
 	}
 	return NULL;
@@ -558,6 +607,26 @@ unsigned int cellNewState(unsigned int i, unsigned int j)
 void cleanupAndquit(void)
 {
 	//	join the threads
+	cout << "\t simulation terminated" << endl;
+	run = false;
+	for (int k = 0; k < maxNumThreads; k++)
+	{
+        pthread_join(info[k].threadID,nullptr);
+        stringstream sstr;
+
+		cout << sstr.str() << flush;
+	}
+	//sstr << threatCount << "threads joined\n";
+    delete []info;
+	//	In fact this code is never reached because we only leave the glut main
+	//	loop through an exit call.
+	//	Free allocated resource before leaving (not absolutely needed, but
+	//	just nicer.  Also, if you crash there, you know something is wrong
+	//	in your code.
+	free(currentGrid2D);
+	free(currentGrid);
+
+	cout << "end." << endl;
 	
 	//	free the grids
 
