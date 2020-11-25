@@ -305,12 +305,14 @@ void oneGeneration(void)
 	{
 		//	initialize ThreadInfo struct for thread k
 		pthread_create(&(info[k].threadID),nullptr,computationThreadFunc,info+k);
+		//cout << info[k].threadID << endl;
 	}
 	//	wait for threads to finish (join)
 	for (int k=0; k < maxNumThreads; k++)
 	{
-		//	create thread k
+		// joins threats
 		pthread_join(info[k].threadID,nullptr);
+		//cout << info[k].threadID << endl;
 	}
 	// free memory once everythig is done
 	delete []info;
@@ -320,8 +322,6 @@ void* computationThreadFunc(void* arg)
 {
 	//	cast argument to proper type
 	ThreadInfo* data = static_cast<ThreadInfo*>(arg);
-	// C-style
-	//ThreadInfo* data = (ThreadInfo*) arg;
 
 	for (unsigned int i = data->startRow; i <= data->endRow; i++)
 	{
@@ -354,7 +354,7 @@ void* computationThreadFunc(void* arg)
 void distributeRows (void)
 {
 	int rowsToDistribute = numRows / maxNumThreads;
-	int remainder = numRows / maxNumThreads;
+	int remainder = numRows % maxNumThreads;
 	int start = 0;
 	int end = rowsToDistribute - 1;
 
@@ -362,7 +362,8 @@ void distributeRows (void)
 	info = new ThreadInfo [maxNumThreads];
 	for (int k = 0; k < maxNumThreads; k++)
 	{
-		//	initialize ThreadInfo struct for thread k
+		//	info is an instance of struct
+		// threadIndex is an attribute of that struct
         info[k].threadIndex = k;
         // define the start and end rows
         if (k < remainder)
