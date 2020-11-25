@@ -183,7 +183,7 @@ int main(int argc, const char* argv[])
 		// cols and rows are bigger than 5
 		if (numCols > 5 && numRows > 5 && maxNumThreads >= 0 )
 		{
-			if ( maxNumThreads < numRows)
+			if ( maxNumThreads <= numRows)
 			{
 				cout << "met all the conditions" << endl;
 				//	This takes care of initializing glut and the GUI.
