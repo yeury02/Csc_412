@@ -58,7 +58,7 @@ typedef struct ThreadInfo
 	int threadIndex;
 	//
 	//	whatever other input or output data may be needed
-	//
+	unsigned int startRow, endRow;
 } ThreadInfo;
 
 
@@ -73,8 +73,10 @@ void displayGridPane(void);
 void displayStatePane(void);
 void initializeApplication(void);
 void cleanupAndquit(void);
-void* threadFunc(void*);
+void* createMainThreadFunc(void* arg);
+void* computationThreadFunc(void* arg);
 void swapGrids(void);
+void distributeRows(void);
 unsigned int cellNewState(unsigned int i, unsigned int j);
 
 
@@ -123,6 +125,10 @@ unsigned int** nextGrid2D;
 //	When this is possible, of course (e.g. makes no sense for a chess program).
 const unsigned int NUM_ROWS = 400, NUM_COLS = 420;
 
+unsigned int numCols, numRows, maxNumThreads;
+unsigned int sleepTime = 100000;
+ThreadInfo* info;
+
 //	the number of live computation threads (that haven't terminated yet)
 unsigned short numLiveThreads = 0;
 
@@ -157,12 +163,47 @@ unsigned int generation = 0;
 //------------------------------------------------------------------------
 int main(int argc, const char* argv[])
 {
+	// error checking for not enough arguments
+	if ( argc != 4 )
+	{
+		cout << "You must pass 3 arguments. Number of rows, columns, and maximum number of threads" << endl;
+	}
+	// right amount of arguments are passed in
+	else 
+	{
+		// get arguments from command line
+		numCols = stoul(argv[1]); // number of columns
+		numRows = stoul(argv[2]); // number of rows
+		maxNumThreads = stoul(argv[3]); // number of threads
+		// check all the arguments are positive intergers
+		// cols and rows are bigger than 5
+		if (numCols > 5 && numRows > 5 && maxNumThreads > -1)
+		{
+			if ( maxNumThreads < numRows)
+			{
+				cout << "met all the conditions" << endl;
+			}
+			else
+			{
+				cout << "number of rows is smaller than or equal to the maximum number of threads. Not Acceptable!" << endl;
+			}
+		}
+		else 
+		{
+			cout << "All values must be positive. columns and rows must be greater than 5" << endl;
+		}
+	}
+
 	//	This takes care of initializing glut and the GUI.
 	//	You shouldn’t have to touch this
 	initializeFrontEnd(argc, argv, displayGridPane, displayStatePane);
 	
 	//	Now we can do application-level initialization
 	initializeApplication();
+
+	// create main threat simulation
+	pthread_t simulation;
+	pthread_create(&simulation, NULL, createMainThreadFunc, NULL);
 
 	//	Now would be the place & time to create mutex locks and threads
 
@@ -231,13 +272,17 @@ void initializeApplication(void)
 //	You will need to implement/modify the two functions below
 //---------------------------------------------------------------------
 
-void* threadFunc(void* arg)
+void* createMainThreadFunc(void* arg)
 {
 	(void) arg;
-	
-	oneGeneration();
-
-	usleep(5000);
+	bool keepGoing = true;
+	while (keepGoing)
+	{
+		oneGeneration();
+		generation++;
+		swapGrids();
+		usleep(sleepTime); // sleepTime is declared as global variable
+	}
 	return NULL;
 }
 
@@ -252,9 +297,33 @@ void* threadFunc(void* arg)
 //	heart's content.
 void oneGeneration(void)
 {
-	for (unsigned int i=0; i<NUM_ROWS; i++)
+	distributeRows();
+	// create threads
+	for (int k=0; k < maxNumThreads; k++)
 	{
-		for (unsigned int j=0; j<NUM_COLS; j++)
+		//	initialize ThreadInfo struct for thread k
+		pthread_create(&(info[k].threadID),nullptr,computationThreadFunc,info+k);
+	}
+	//	wait for threads to finish (join)
+	for (int k=0; k < maxNumThreads; k++)
+	{
+		//	create thread k
+		pthread_join(info[k].threadID,nullptr);
+	}
+	// free memory once everythig is done
+	delete []info;
+}
+
+void* computationThreadFunc(void* arg)
+{
+	//	cast argument to proper type
+	ThreadInfo* data = static_cast<ThreadInfo*>(arg);
+	// C-style
+	//ThreadInfo* data = (ThreadInfo*) arg;
+
+	for (unsigned int i = data->startRow; i <= data->endRow; i++)
+	{
+		for (unsigned int j=0; j<numCols; j++)
 		{
 			unsigned int newState = cellNewState(i, j);
 
@@ -274,13 +343,35 @@ void oneGeneration(void)
 				//	An old cell remains old until it dies
 				else
 					nextGrid2D[i][j] = currentGrid2D[i][j];
-
 			}
 		}
 	}
-	generation++;
-	
-	swapGrids();
+	return NULL;
+}
+
+void distributeRows (void)
+{
+	int rowsToDistribute = numRows / maxNumThreads;
+	int remainder = numRows / maxNumThreads;
+	int start = 0;
+	int end = rowsToDistribute - 1;
+
+	// global ThreadInfo + number of threads
+	info = new ThreadInfo [maxNumThreads];
+	for (int k = 0; k < maxNumThreads; k++)
+	{
+		//	initialize ThreadInfo struct for thread k
+        info[k].threadIndex = k;
+        // define the start and end rows
+        if (k < remainder)
+        {
+            end++;
+        }
+        info[k].startRow = start;
+        info[k].endRow = end;
+        start = end + 1;
+        end = end + rowsToDistribute;
+	}
 }
 
 //	This is the function that determines how a cell update its state
@@ -583,6 +674,14 @@ void myKeyboardFunc(unsigned char c, int x, int y)
 		case 'l':
 			toggleDrawGridLines();
 			break;
+			//	',' --> slowdown
+			case ',':
+				sleepTime = 11*sleepTime/10;
+				break;
+			//	'.' --> speedup
+			case '.':
+				if (sleepTime > 10000)
+					sleepTime = 9*sleepTime/10;
 
 		default:
 			break;
@@ -604,7 +703,7 @@ void myTimerFunc(int value)
 	//	This call must **DEFINITELY** go away.
 	//	(when you add proper threading)
 	//==============================================
-    threadFunc(NULL);
+    // threadFunc(NULL);
 	
 	//	This is not the way it should be done, but it seems that Apple is
 	//	not happy with having marked glut as deprecated.  They are doing
@@ -613,7 +712,7 @@ void myTimerFunc(int value)
     myDisplayFunc();
     
 	//	And finally I perform the rendering
-	glutTimerFunc(100, myTimerFunc, 0);
+	glutTimerFunc(15, myTimerFunc, 0);
 }
 
 //---------------------------------------------------------------------
@@ -649,4 +748,3 @@ void swapGrids(void)
 	currentGrid2D = nextGrid2D;
 	nextGrid2D = tempGrid2D;
 }
-
